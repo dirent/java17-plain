@@ -18,5 +18,14 @@ public class JavaTest {
         System.out.println(message);
     }
 
+    @Test
+    public void generateJson() {
+        var message = """
+        {
+            "message":"%s"
+        }
+        """.formatted("hello,duke");
+        System.out.println(message);
+    }
 
 }
