@@ -1,15 +1,13 @@
 package de.dirent;
 
-import org.joda.time.*;
+import org.joda.time.Days;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Brueckentage {
@@ -27,24 +25,26 @@ public class Brueckentage {
         DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
         LocalDate day = start;
         while(day.isBefore(end) ) {
-            System.out.println( fmt.print(day) + " | " + day.dayOfWeek().get() + " | " + bt.isFt(day) );
+            System.out.println(fmt.print(day) + " | " + day.dayOfWeek().get() + " | " + bt.getFt(day));
             day = day.plusDays(1);
         }
     }
 
-
-    private List<LocalDate> feiertage;
+    private Map<LocalDate, String> feiertage;
 
     public Brueckentage() {
         this.feiertage = readFeiertage();
     }
 
-    public Boolean isFt( LocalDate date ) {
-        return Boolean.valueOf( this.feiertage.contains(date) );
+    public String getFt( LocalDate day ) {
+        if( this.feiertage.containsKey(day) ) {
+            return this.feiertage.get(day);
+        }
+        return "";
     }
 
-    private List<LocalDate> readFeiertage() {
-        List<LocalDate> feiertage = new ArrayList<>();
+    private Map<LocalDate, String> readFeiertage() {
+        Map<LocalDate, String> feiertage = new HashMap<>();
         InputStream csvStream = Brueckentage.class.getResourceAsStream("nrw.csv");
         if( csvStream == null ) {
             System.err.println( "No input csv found." );
@@ -59,7 +59,7 @@ public class Brueckentage {
             while( csv.hasNextLine() ) {
                 String[] parts = csv.nextLine().split(";");
                 if( parts.length == 2 ) {
-                    feiertage.add( dtf.parseLocalDate(parts[0]) );
+                    feiertage.put( dtf.parseLocalDate(parts[0]), parts[1] );
                 }
             }
         }
