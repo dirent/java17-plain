@@ -19,17 +19,18 @@ public class Brueckentage {
         LocalDate start = new LocalDate( 2022, 12, 27 );
         LocalDate end = new LocalDate( 2024, 01, 06 ).plusDays(1);
 
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
-        LocalDate day = start;
-        while(day.isBefore(end) ) {
-            day = day.plusDays(1);
-        }
-
         Days _2023 = Days.daysBetween( start, end );
         System.out.println( "Days count: " + _2023.getDays() );
 
         List<LocalDate> feiertage = readFeiertage();
         System.out.println( "Read " + feiertage.size() + " public holidays." );
+
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
+        LocalDate day = start;
+        while(day.isBefore(end) ) {
+            System.out.println( fmt.print(day) + " | " + day.dayOfWeek().get() );
+            day = day.plusDays(1);
+        }
     }
 
     public static List<LocalDate> readFeiertage() {
