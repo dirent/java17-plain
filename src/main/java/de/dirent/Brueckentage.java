@@ -1,46 +1,69 @@
 package de.dirent;
 
-import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Brueckentage {
 
     public static void main( String[] args ) {
-
-        LocalDate start = new LocalDate( 2022, 12, 27 );
-        LocalDate end = new LocalDate( 2024, 01, 06 ).plusDays(1);
-
-        Days _2023 = Days.daysBetween( start, end );
-        System.out.println( "Days count: " + _2023.getDays() );
-
-        Brueckentage bt = new Brueckentage();
-
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
-        LocalDate day = start;
-        while(day.isBefore(end) ) {
-            System.out.println(fmt.print(day) + " | " + day.dayOfWeek().get() + " | " + bt.getFt(day));
-            day = day.plusDays(1);
-        }
+        Brueckentage bt = new Brueckentage( 2023 );
     }
 
     private Map<LocalDate, String> feiertage;
 
-    public Brueckentage() {
+    public Brueckentage( int year ) {
         this.feiertage = readFeiertage();
+
+        LocalDate start = new LocalDate( year-1, 12, 27 );
+        LocalDate end = new LocalDate( year+1, 01, 06 ).plusDays(1);
+
+        LocalDate day = start;
+        List<List<LocalDate>> aggregated = new ArrayList<>();
+        List<LocalDate> days = new ArrayList<>();
+        aggregated.add(days);
+        while(day.isBefore(end) ) {
+            List<LocalDate> currentDays = aggregated.get( aggregated.size()-1 );
+            if( currentDays.isEmpty() ) {
+                currentDays.add(day);
+            } else if( (!isAt(currentDays.get(0))  &&  isAt(day))  ||  (isAt(currentDays.get(0))  &&  !isAt(day)) ) {
+                List<LocalDate> nextDays = new ArrayList<>();
+                nextDays.add(day);
+                aggregated.add(nextDays);
+            } else {
+                currentDays.add(day);
+            }
+
+            day = day.plusDays(1);
+        }
+
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
+        System.out.print( "Brückentage in " + year + ": " );
+        List<LocalDate> brueckentage = new ArrayList<>();
+        aggregated.stream().filter( agg -> agg.size() == 1  &&  isAt(agg.get(0) ) ).forEach( agg -> {
+            brueckentage.add(agg.get(0));
+        });
+        brueckentage.forEach( bt -> System.out.print(fmt.print(bt) + "  ") );
+        System.out.println();
     }
 
-    public String getFt( LocalDate day ) {
-        if( this.feiertage.containsKey(day) ) {
+    protected boolean isFt( LocalDate day ) {
+        return this.feiertage.containsKey(day);
+    }
+
+    protected String getFt( LocalDate day ) {
+        if( isFt(day) ) {
             return this.feiertage.get(day);
         }
         return "";
+    }
+
+    protected boolean isAt( LocalDate day ) {
+        return day.dayOfWeek().get() <= 5  &&  !isFt(day);
     }
 
     private Map<LocalDate, String> readFeiertage() {
