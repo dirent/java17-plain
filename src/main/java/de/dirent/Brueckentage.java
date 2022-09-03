@@ -6,15 +6,24 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Brueckentage {
 
     public static void main( String[] args ) {
-        Brueckentage bt = new Brueckentage( 2023 );
+        int year = 2023;
+        List<LocalDate> brueckentage = new Brueckentage(year).getBrueckentage();
+
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
+        System.out.print( "Brückentage in " + year + ": " );
+        brueckentage.forEach( bt -> System.out.print(fmt.print(bt) + "  ") );
     }
 
     private Map<LocalDate, String> feiertage;
+    private List<LocalDate> brueckentage;
+
+    public List<LocalDate> getBrueckentage() {
+        return this.brueckentage;
+    }
 
     public Brueckentage( int year ) {
         this.feiertage = readFeiertage();
@@ -41,25 +50,14 @@ public class Brueckentage {
             day = day.plusDays(1);
         }
 
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
-        System.out.print( "Brückentage in " + year + ": " );
-        List<LocalDate> brueckentage = new ArrayList<>();
+        this.brueckentage = new ArrayList<>();
         aggregated.stream().filter( agg -> agg.size() == 1  &&  isAt(agg.get(0) ) ).forEach( agg -> {
-            brueckentage.add(agg.get(0));
+            this.brueckentage.add(agg.get(0));
         });
-        brueckentage.forEach( bt -> System.out.print(fmt.print(bt) + "  ") );
-        System.out.println();
     }
 
     protected boolean isFt( LocalDate day ) {
         return this.feiertage.containsKey(day);
-    }
-
-    protected String getFt( LocalDate day ) {
-        if( isFt(day) ) {
-            return this.feiertage.get(day);
-        }
-        return "";
     }
 
     protected boolean isAt( LocalDate day ) {
