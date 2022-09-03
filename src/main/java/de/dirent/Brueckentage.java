@@ -22,18 +22,28 @@ public class Brueckentage {
         Days _2023 = Days.daysBetween( start, end );
         System.out.println( "Days count: " + _2023.getDays() );
 
-        List<LocalDate> feiertage = readFeiertage();
-        System.out.println( "Read " + feiertage.size() + " public holidays." );
+        Brueckentage bt = new Brueckentage();
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("E dd.MM.yyyy");
         LocalDate day = start;
         while(day.isBefore(end) ) {
-            System.out.println( fmt.print(day) + " | " + day.dayOfWeek().get() );
+            System.out.println( fmt.print(day) + " | " + day.dayOfWeek().get() + " | " + bt.isFt(day) );
             day = day.plusDays(1);
         }
     }
 
-    public static List<LocalDate> readFeiertage() {
+
+    private List<LocalDate> feiertage;
+
+    public Brueckentage() {
+        this.feiertage = readFeiertage();
+    }
+
+    public Boolean isFt( LocalDate date ) {
+        return Boolean.valueOf( this.feiertage.contains(date) );
+    }
+
+    private List<LocalDate> readFeiertage() {
         List<LocalDate> feiertage = new ArrayList<>();
         InputStream csvStream = Brueckentage.class.getResourceAsStream("nrw.csv");
         if( csvStream == null ) {
